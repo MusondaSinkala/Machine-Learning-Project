@@ -5,12 +5,15 @@ contains class and functions for extracting features
 """
 
 # Imports
+from typing import Any
 import cv2
 import numpy as np
 from collections import defaultdict
 from pathlib import Path
 from PIL import Image
 from scipy.signal import argrelextrema
+from sklearn.preprocessing import FunctionTransformer
+
 
 # Constants
 
@@ -31,6 +34,21 @@ def from_pil_to_cv(img_in):
     # Convert RGB to BGR
     open_cv_image = open_cv_image[:, :, ::-1].copy()
     return open_cv_image
+
+
+def from_skimage_to_cv(img_in):
+    """
+    -------------------------------------------------------
+    convert a scikit-image in RGB to image into opencv
+    image in BGR
+    -------------------------------------------------------
+    Parameters:
+       img_in: Scikit image object
+    Returns:
+       open_cv_image: (numpy array)
+    -------------------------------------------------------
+    """
+    return img_in[:, :, ::-1]
 
 
 def extract_details_from_path(img_path: str):
@@ -60,6 +78,7 @@ class ImageFeatureExtractor:
     class for extracting features and statistics from images
     -------------------------------------------------------
     """
+
     def __init__(self, features: dict | None = None):
         """
         -------------------------------------------------------
@@ -150,7 +169,7 @@ class ImageFeatureExtractor:
         N_l = ((g_i <= img) & (img < g_i + R)).sum()
         return (N_l / N) * 100
 
-    def __call__(self, img: Image.Image | np.ndarray) -> list[float, ...]:
+    def __call__(self, img: Image.Image | np.ndarray) -> list[Any]:
         """
         -------------------------------------------------------
         Extracts features of the image
@@ -179,3 +198,16 @@ class ImageFeatureExtractor:
         # Percentage of pixels belonging to lower quarter of the pixel intensities
         features += [self.low_quart_pixel_int(img)] if self.features['LPP'] else []
         return features
+
+    def sklearn_transformer(self):
+        """
+        -------------------------------------------------------
+        Returns an sklearn preprocessing object that can be used
+        in pipeline
+        -------------------------------------------------------
+        Returns:
+           transformer: feature transformer (sklearn.preprocessing.FunctionTransformer)
+        -------------------------------------------------------
+        """
+        return FunctionTransformer(func=self.__call__, validate=True)
+
