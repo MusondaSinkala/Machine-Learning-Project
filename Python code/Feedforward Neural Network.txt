@@ -1,0 +1,18 @@
+Epoch [10/100], Loss: 18.0652
+Epoch [20/100], Loss: 4.4154
+Epoch [30/100], Loss: 4.8832
+Epoch [40/100], Loss: 3.0892
+Epoch [50/100], Loss: 2.4268
+Epoch [60/100], Loss: 1.9198
+Epoch [70/100], Loss: 1.3310
+Epoch [80/100], Loss: 1.0165
+Epoch [90/100], Loss: 0.8273
+Epoch [100/100], Loss: 0.7396
+
+Accuracy: 0.6841635888658679
+Precision: 0.428160239728728
+Recall: 0.3456408950568164
+F1-score: 0.3825005723947234
+Confusion Matrix:
+[[65090 14503]
+ [20558 10859]]
