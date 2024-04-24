@@ -80,37 +80,28 @@ def load_data():
     group = df[group_col].to_dask_array(lengths=True)
     return X, y, group
 
-def get_train_test_val_split(X, y, group):
+def get_train_test_val_split():
     """
     -------------------------------------------------------
     Splits the data into train test and validation datasets based on each Patient
     Patient Id overlap can cause data leakage
     -------------------------------------------------------
-    Parameters:
-       X: extracted independent columns from images (dask.array[X_cols])
-       y: label for corresponding image (dask.array[int])
-       group: Patient Id of the image (dask.array[int])
     Returns:
        datasets: for each dataset a dictionary of
             datasetname -> array of image paths & array of labels
     -------------------------------------------------------
     """
-    def split_once(X, y, group):
-        gss = GroupShuffleSplit(n_splits=1, test_size=0.2, random_state=RANDOM_SEED)
-        train_ind, test_ind = next(gss.split(X, y, groups=group))
-        X_train, X_test, y_train, y_test = X[train_ind], X[test_ind], y[train_ind], y[test_ind]
-        group_train, group_test = group[train_ind], group[test_ind]
-        return X_train, X_test, y_train, y_test, group_train, group_test
+    res = {}
+    splits = ["training", "validation", "testing"]
+    for key in splits:
+        df = dd.read_csv(os.path.join(BASE_PATH, 'Data', f'{key}_histopathological_data.csv'))
+        X = df[X_cols].to_dask_array(lengths=True)
+        y = df[Y_col].to_dask_array(lengths=True)
+        group = df[group_col].to_dask_array(lengths=True)
+        res[key] = (X, y, group)
+    return res
 
-    print('Splitting train and test Data')
-    X_train, X_test, y_train, y_test, group, group_test = split_once(X, y, group)
-    print('Splitting train and val Data')
-    X_train, X_val, y_train, y_val, group_train, group_val = split_once(X_train, y_train, group)
-    return {
-        "training": (X_train, y_train, group_train),
-        "validation": (X_val, y_val, group_val),
-        "testing": (X_test, y_test, group_test)
-    }
+
 def hyperparameter_search(train_data, val_data):
     """
     -------------------------------------------------------
@@ -182,8 +173,8 @@ if __name__ == "__main__":
         from dask_mpi import initialize
         initialize(interface='ib0', local_directory=os.getenv('TMPDIR'))
         client = Client()
-    X, y, group = load_data()
-    datasets = get_train_test_val_split(X, y, group)
+    # X, y, group = load_data()
+    datasets = get_train_test_val_split()
     results_df = hyperparameter_search(datasets['training'], datasets['validation'])
     best_params = results_df.loc[results_df['mean_test_score'].idxmax(), 'params']
     model = train_model(client, datasets['training'], datasets['validation'], best_params)
