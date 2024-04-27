@@ -5,26 +5,33 @@ from sklearn.model_selection import train_test_split
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix, classification_report
 from sklearn.preprocessing import StandardScaler
+
+torch.manual_seed(0)
 
 # load the data
 cwd = os.getcwd()
-data = pd.read_csv(cwd + f"\\Data\\histopathological_data.csv")
-data = data[data.columns[2:].values] # Exclude the directory path and files columns
-data.head()
-
-# Random, small sample from the data
-sample_data = data#.sample(n = 200000, random_state = 7)
-
-# Exclude the PatientID feature
-X = sample_data.drop(['PatientID', 'cancer'], axis = 1)  # Dropping both PatientID and the target variable (cancer)
-y = sample_data['cancer']
+# data = pd.read_csv(cwd + f"\\Data\\histopathological_data.csv")
+# data = data[data.columns[2:].values] # Exclude the directory path and files columns
+# data.head()
+#
+# # Random, small sample from the data
+# sample_data = data#.sample(n = 200000, random_state = 7)
+#
+# # Exclude the PatientID feature
+# X = sample_data.drop(['PatientID', 'cancer'], axis = 1)  # Dropping both PatientID and the target variable (cancer)
+# y = sample_data['cancer']
 
 # Split the data into training and test sets
-X_train, X_test, y_train, y_test = train_test_split(X, y,
-                                                    test_size = 0.2,
-                                                    random_state = 7)
+cols = ['MPI', 'SDPI', 'OTV', 'LM', 'UPP', 'LPP', 'Xcoords', 'Ycoords', 'PatientID', 'cancer']
+train_data = pd.read_csv(os.path.join(cwd, 'Data/training_histopathological_data.csv'), usecols=cols)
+test_data = pd.read_csv(os.path.join(cwd, 'Data/testing_histopathological_data.csv'), usecols=cols)
+
+X_train = train_data.drop(['PatientID', 'cancer'], axis = 1) # Dropping both PatientID and the target variable (cancer)
+y_train = train_data['cancer']
+X_test = test_data.drop(['PatientID', 'cancer'], axis = 1) # Dropping both PatientID and the target variable (cancer)
+y_test = test_data['cancer']
 
 class FeedforwardNN(nn.Module):
     def __init__(self, input_dim, hidden_dim, output_dim):
@@ -104,6 +111,7 @@ print("Recall:", recall)
 print("F1-score:", f1)
 print("Confusion Matrix:")
 print(conf_matrix)
+print(classification_report(y_true=y_test,y_pred=predictions))
 
 # Get the parameters of the trained neural network model
 model_params = model.state_dict()
@@ -112,3 +120,5 @@ model_params = model.state_dict()
 print("Parameters of the trained neural network model:")
 for param_name, param_value in model_params.items():
     print(param_name, ":", param_value)
+
+

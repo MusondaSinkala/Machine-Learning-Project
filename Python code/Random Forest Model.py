@@ -8,27 +8,30 @@ from sklearn.metrics import accuracy_score, confusion_matrix, classification_rep
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-# load the data
+# # load the data
 cwd = os.getcwd()
-data = pd.read_csv(cwd + f"\\Data\\histopathological_data.csv")
-data = data[data.columns[2:].values] # Exclude the directory path and files columns
-data.head()
-
-# Random, small sample from the data
-sample_data = data#.sample(n = 300000, random_state = 7)
-
-# Extract unique PatientID values
-unique_patient_ids = sample_data['PatientID'].unique()
-
-# Randomly shuffle the unique PatientID values
-random.shuffle(unique_patient_ids)
-
-# Split the shuffled PatientID values into training and test sets (e.g., 80% train, 20% test)
-train_patient_ids, test_patient_ids = train_test_split(unique_patient_ids, test_size = 0.2, random_state = 7)
-
-# Filter the original dataset to create the training and test sets
-train_data = data[data['PatientID'].isin(train_patient_ids)]
-test_data = data[data['PatientID'].isin(test_patient_ids)]
+# data = pd.read_csv(cwd + f"\\Data\\histopathological_data.csv")
+# data = data[data.columns[2:].values] # Exclude the directory path and files columns
+# data.head()
+#
+# # Random, small sample from the data
+# sample_data = data#.sample(n = 300000, random_state = 7)
+#
+# # Extract unique PatientID values
+# unique_patient_ids = sample_data['PatientID'].unique()
+#
+# # Randomly shuffle the unique PatientID values
+# random.shuffle(unique_patient_ids)
+#
+# # Split the shuffled PatientID values into training and test sets (e.g., 80% train, 20% test)
+# train_patient_ids, test_patient_ids = train_test_split(unique_patient_ids, test_size = 0.2, random_state = 7)
+#
+# # Filter the original dataset to create the training and test sets
+# train_data = data[data['PatientID'].isin(train_patient_ids)]
+# test_data = data[data['PatientID'].isin(test_patient_ids)]
+cols = ['MPI', 'SDPI', 'OTV', 'LM', 'UPP', 'LPP', 'Xcoords', 'Ycoords', 'PatientID', 'cancer']
+train_data = pd.read_csv(os.path.join(cwd, 'Data/training_histopathological_data.csv'), usecols=cols)
+test_data = pd.read_csv(os.path.join(cwd, 'Data/testing_histopathological_data.csv'), usecols=cols)
 
 X_train = train_data.drop(['PatientID', 'cancer'], axis = 1) # Dropping both PatientID and the target variable (cancer)
 y_train = train_data['cancer']
@@ -36,6 +39,7 @@ X_test = test_data.drop(['PatientID', 'cancer'], axis = 1) # Dropping both Patie
 y_test = test_data['cancer']
 
 # Exclude the PatientID feature
+sample_data = pd.read_csv(os.path.join(cwd, 'Data/training_histopathological_data.csv'), usecols=cols)
 X = sample_data.drop(['cancer'], axis = 1)  # Dropping both PatientID and the target variable (cancer)
 y = sample_data['cancer']
 
@@ -74,7 +78,7 @@ n_splits = 5
 group_kfold = GroupKFold(n_splits = n_splits)
 
 # Perform grouped cross-validation
-cv_scores = cross_val_score(rf_model, X, y, cv = group_kfold, groups = X['PatientID'])
+cv_scores = cross_val_score(rf_model, X.drop(['PatientID'], axis = 1), y, cv = group_kfold, groups = X['PatientID'])
 
 # Print mean cross-validation accuracy
 print("Mean CV Accuracy (Grouped Cross-Validation):", cv_scores.mean())
@@ -91,7 +95,7 @@ for param_name, param_value in rf_params.items():
 feature_importance = rf_model.feature_importances_
 
 # Get the names of the features
-feature_names = X.columns
+feature_names = X.drop(['PatientID'], axis = 1).columns
 
 # Sort feature importances in descending order
 indices = feature_importance.argsort()[::-1]
@@ -99,8 +103,8 @@ indices = feature_importance.argsort()[::-1]
 # Plot feature importances
 plt.figure(figsize=(10, 6))
 plt.title("Feature Importance Plot")
-plt.bar(range(X.shape[1]), feature_importance[indices], color = "b", align = "center")
-plt.xticks(range(X.shape[1]), feature_names[indices], rotation = 90)
+plt.bar(range(X_train.shape[1]), feature_importance[indices], color = "b", align = "center")
+plt.xticks(range(X_train.shape[1]), feature_names[indices], rotation = 90)
 plt.xlabel("Feature")
 plt.ylabel("Importance")
 plt.tight_layout()
