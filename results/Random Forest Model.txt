@@ -1,16 +1,15 @@
 MODEL ACCURACY
-
-Training Accuracy: 1.0
-Test Accuracy: 0.7894380148055469
+Training Accuracy: 0.9978675746914488
+Test Accuracy: 0.796521130049031
 
 CLASSIFICATION REPORT
 
               precision    recall  f1-score   support
-           0       0.85      0.87      0.86     85486
-           1       0.59      0.57      0.58     29606
-    accuracy                           0.79    115092
-   macro avg       0.72      0.72      0.72    115092
-weighted avg       0.79      0.79      0.79    115092
+           0       0.85      0.89      0.87     39315
+           1       0.58      0.49      0.53     12081
+    accuracy                           0.80     51396
+   macro avg       0.71      0.69      0.70     51396
+weighted avg       0.79      0.80      0.79     51396
 
 5-FOLD CROSS-VALIDATION
 
@@ -38,14 +37,3 @@ oob_score : False
 random_state : 7
 verbose : 0
 warm_start : False
-
-SUMMARY
-
-The Random Forest model is configured with the following parameters:
-
-n_estimators: Number of trees in the forest (100 trees in this case).
-max_depth: Maximum depth of the trees (None, allowing trees to expand until all leaves are pure).
-min_samples_split: Minimum number of samples required to split an internal node (2).
-min_samples_leaf: Minimum number of samples required to be at a leaf node (1).
-Other parameters such as bootstrap, criterion, max_features, and random_state are also set to default values.
-Overall, the Random Forest model appears to perform well on the given dataset, achieving high accuracy and demonstrating robustness through cross-validation.
